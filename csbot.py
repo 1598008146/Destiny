@@ -91,7 +91,7 @@ import certifi
 # -------------------------------
 TOKEN = os.getenv("TOKEN")  # Telegram Bot Token
 SERVERCHAN_SENDKEY = os.getenv("SERVERCHAN_SENDKEY")  # Server酱 key
-TARGET_USERNAMES = ["AndreaDepierre2020","KB_Kyle","KB-TOM","JIETION"]
+TARGET_USERNAMES = ["AndreaDepierre2020","KB_Kyle","KB_TOM","JIETION"]
 
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 app = Flask(__name__)
@@ -153,6 +153,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
