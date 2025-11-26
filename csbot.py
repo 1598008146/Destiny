@@ -147,12 +147,13 @@ def webhook():
 # -------------------------------
 if __name__ == "__main__":
     # 设置 Webhook
-    WEBHOOK_URL = f"https://你的域名/{TOKEN}"  # 修改成你部署后的 HTTPS URL
+    WEBHOOK_URL = f"https://destiny-jhy5.onrender.com/{TOKEN}"  # 修改成你部署后的 HTTPS URL
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL)
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
