@@ -89,8 +89,8 @@ import certifi
 # -------------------------------
 # 固定配置
 # -------------------------------
-TOKEN = os.getenv("TOKEN")
-SERVERCHAN_SENDKEY = os.getenv("SERVERCHAN_SENDKEY")
+TOKEN = os.getenv("TOKEN")  # Telegram Bot Token
+SERVERCHAN_SENDKEY = os.getenv("SERVERCHAN_SENDKEY")  # Server酱 key
 TARGET_USERNAMES = ["AndreaDepierre2020","KB_Kyle","KB-TOM","JIETION"]
 
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
@@ -113,18 +113,24 @@ def send_serverchan(msg: str):
 # -------------------------------
 @bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    if not message.entities:
+    entities = getattr(message, "entities", [])  # Webhook 兼容
+    if not entities:
         return
-    for entity in message.entities:
-        if entity.type == "text_mention":
-            if entity.user.username in TARGET_USERNAMES:
-                bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
-                send_serverchan(f"{message.from_user.first_name} @ {entity.user.first_name}:\n{message.text}")
+
+    for entity in entities:
+        # 用户被直接 @（无 username，Telegram 内部 user_id）
+        if entity.type == "text_mention" and entity.user.username in TARGET_USERNAMES:
+            bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
+            send_serverchan(f"{message.from_user.first_name} @ {entity.user.first_name}:\n{message.text}")
+            return
+
+        # 普通 @username
         elif entity.type == "mention":
-            username = message.text[entity.offset: entity.offset + entity.length].lstrip("@")
+            username = message.text[entity.offset:entity.offset + entity.length].lstrip("@")
             if username in TARGET_USERNAMES:
                 bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
                 send_serverchan(f"{message.from_user.first_name} @ @{username}:\n{message.text}")
+                return
 
 # -------------------------------
 # Flask 接收 Telegram Webhook
@@ -140,14 +146,15 @@ def webhook():
 # 启动 Web 服务
 # -------------------------------
 if __name__ == "__main__":
-    # 设置 Webhook，替换成你部署后的 URL
-    WEBHOOK_URL = f"https://你的域名/{TOKEN}"
+    # 设置 Webhook
+    WEBHOOK_URL = f"https://你的域名/{TOKEN}"  # 修改成你部署后的 HTTPS URL
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL)
-
-    # 启动 Flask 服务
+    
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
+
 
 
 
