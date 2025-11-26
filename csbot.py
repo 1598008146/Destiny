@@ -10,6 +10,9 @@
 # TARGET_USERNAMES = ["AndreaDepierre2020","KB_Kyle","KB-TOM","JIETION"]
 
 import os
+import telebot
+import requests
+import certifi
 
 TOKEN = os.getenv("TOKEN")  # Telegram Bot Token
 SERVERCHAN_SENDKEY = os.getenv("SERVERCHAN_SENDKEY")  # Server酱 key
@@ -76,3 +79,4 @@ def detect_mention_and_notify(message):
 # 4️⃣ 启动长轮询
 # -------------------------------
 bot.infinity_polling(timeout=10, long_polling_timeout=5)
+
