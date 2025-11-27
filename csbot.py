@@ -85,6 +85,16 @@ from flask import Flask, request
 import telebot
 import requests
 import certifi
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@bot.message_handler(content_types=['text'])
+def detect_mention_and_notify(message):
+    logger.info("收到消息: %s", message.text)
+    logger.info("来自用户: %s", message.from_user.username)
+    logger.info("entities: %s", message.entities)
 
 # -------------------------------
 # 固定配置
@@ -114,10 +124,7 @@ def send_serverchan(msg: str):
 @bot.message_handler(content_types=['text'])
 @bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    print("====== 收到新消息 ======")
-    print("消息文本：", message.text)
-    print("来自用户：", message.from_user.username)
-    print("entities：", message.entities)
+    detect_mention_and_notify(message)
 
     if not message.entities:
         print("没有 @ ，直接忽略")
@@ -168,6 +175,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
