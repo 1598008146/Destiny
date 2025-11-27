@@ -112,25 +112,40 @@ def send_serverchan(msg: str):
 # 监听 @ 的消息
 # -------------------------------
 @bot.message_handler(content_types=['text'])
+@bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    entities = getattr(message, "entities", [])  # Webhook 兼容
-    if not entities:
+    print("====== 收到新消息 ======")
+    print("消息文本：", message.text)
+    print("来自用户：", message.from_user.username)
+    print("entities：", message.entities)
+
+    if not message.entities:
+        print("没有 @ ，直接忽略")
         return
 
-    for entity in entities:
-        # 用户被直接 @（无 username，Telegram 内部 user_id）
-        if entity.type == "text_mention" and entity.user.username in TARGET_USERNAMES:
-            bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
-            send_serverchan(f"{message.from_user.first_name} @ {entity.user.first_name}:\n{message.text}")
-            return
+    for entity in message.entities:
+        print("---- entity ----")
+        print("类型：", entity.type)
+        print("用户：", getattr(entity, 'user', None))
 
-        # 普通 @username
-        elif entity.type == "mention":
-            username = message.text[entity.offset:entity.offset + entity.length].lstrip("@")
+        # @具体用户（text_mention）
+        if entity.type == "text_mention":
+            username = entity.user.username
+            print("检测到 text_mention @：", username)
+
             if username in TARGET_USERNAMES:
+                print("命中目标用户，发送自动回复")
                 bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
-                send_serverchan(f"{message.from_user.first_name} @ @{username}:\n{message.text}")
-                return
+
+        # 普通 @ （@username）
+        elif entity.type == "mention":
+            username = message.text[entity.offset: entity.offset + entity.length].lstrip("@")
+            print("检测到普通 @：", username)
+
+            if username in TARGET_USERNAMES:
+                print("命中目标用户，发送自动回复")
+                bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
+
 
 # -------------------------------
 # Flask 接收 Telegram Webhook
@@ -153,6 +168,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
