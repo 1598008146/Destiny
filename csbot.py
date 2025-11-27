@@ -102,9 +102,14 @@ app = Flask(__name__)
 
 @bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    logger.info("收到消息: %s", message.text)
-    logger.info("来自用户: %s", message.from_user.username)
-    logger.info("entities: %s", message.entities)
+    if message.entities:
+        for i, entity in enumerate(msg.entities):
+            logger.info(f"Entity #{i+1}:")
+            # 获取所有属性及值
+            for attr, value in vars(entity).items():
+               logger.info(f"  {attr}: {value}")
+    else:
+        logger.info("没有 entities")
 
 # -------------------------------
 # Server酱推送函数
@@ -175,6 +180,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
