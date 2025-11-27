@@ -86,6 +86,7 @@ import telebot
 import requests
 import certifi
 import logging
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -100,17 +101,6 @@ TARGET_USERNAMES = ["AndreaDepierre2020","KB_Kyle","KB_TOM","JIETION"]
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 app = Flask(__name__)
 
-@bot.message_handler(content_types=['text'])
-def detect_mention_and_notify2(msg):
-    if msg.entities:
-        for i, entity in enumerate(msg.entities):
-            logger.info(f"Entity #{i+1}:")
-            # 获取所有属性及值
-            for attr, value in vars(entity).items():
-               logger.info(f"  {attr}: {value}")
-    else:
-        logger.info("没有 entities")
-
 # -------------------------------
 # Server酱推送函数
 # -------------------------------
@@ -119,45 +109,48 @@ def send_serverchan(msg: str):
     data = {"title": "Telegram提醒", "desp": msg}
     try:
         res = requests.post(url, data=data, verify=certifi.where())
-        print(res.status_code, res.text)
+        logger.info(f"Server酱推送状态: {res.status_code}, {res.text}")
     except Exception as e:
-        print("Server酱推送异常:", e)
+        logger.error("Server酱推送异常:", e)
+
+# -------------------------------
+# 打印实体信息为 JSON 风格
+# -------------------------------
+def log_entity(entity):
+    entity_dict = {attr: getattr(entity, attr) for attr in vars(entity)}
+    logger.info(json.dumps(entity_dict, ensure_ascii=False, indent=2))
 
 # -------------------------------
 # 监听 @ 的消息
 # -------------------------------
 @bot.message_handler(content_types=['text'])
-@bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    
     if not message.entities:
-        print("没有 @ ，直接忽略")
+        logger.info("没有 @ ，直接忽略")
         return
 
     for entity in message.entities:
-        print("---- entity ----")
-        print("类型：", entity.type)
-        print("用户：", getattr(entity, 'user', None))
+        log_entity(entity)
 
         # @具体用户（text_mention）
-        if entity.type == "text_mention":
+        if entity.type == "text_mention" and entity.user:
             username = entity.user.username
-            print("检测到 text_mention @：", username)
+            logger.info(f"检测到 text_mention @：{username}")
 
             if username in TARGET_USERNAMES:
-                print("命中目标用户，发送自动回复")
-                bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
+                reply_text = "您好，劳请贵司稍等，我方立即确认。"
+                bot.reply_to(message, reply_text)
+                send_serverchan(f"检测到目标用户 {username}，自动回复已发送。消息内容：\n{message.text}")
 
         # 普通 @ （@username）
         elif entity.type == "mention":
-            detect_mention_and_notify2(entity)
             username = message.text[entity.offset: entity.offset + entity.length].lstrip("@")
-            print("检测到普通 @：", username)
+            logger.info(f"检测到普通 @：{username}")
 
             if username in TARGET_USERNAMES:
-                print("命中目标用户，发送自动回复")
-                bot.reply_to(message, "您好，劳请贵司稍等，我方立即确认。")
-
+                reply_text = "您好，劳请贵司稍等，我方立即确认。"
+                bot.reply_to(message, reply_text)
+                send_serverchan(f"检测到目标用户 {username}，自动回复已发送。消息内容：\n{message.text}")
 
 # -------------------------------
 # Flask 接收 Telegram Webhook
@@ -179,7 +172,9 @@ if __name__ == "__main__":
     bot.set_webhook(url=WEBHOOK_URL)
     
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)
+
+
 
 
 
