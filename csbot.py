@@ -129,8 +129,7 @@ def send_serverchan(msg: str):
 @bot.message_handler(content_types=['text'])
 @bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    detect_mention_and_notify2(message)
-
+    
     if not message.entities:
         print("没有 @ ，直接忽略")
         return
@@ -151,6 +150,7 @@ def detect_mention_and_notify(message):
 
         # 普通 @ （@username）
         elif entity.type == "mention":
+            detect_mention_and_notify2(entity)
             username = message.text[entity.offset: entity.offset + entity.length].lstrip("@")
             print("检测到普通 @：", username)
 
@@ -180,6 +180,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
