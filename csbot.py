@@ -101,7 +101,7 @@ bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 app = Flask(__name__)
 
 @bot.message_handler(content_types=['text'])
-def detect_mention_and_notify(msg):
+def detect_mention_and_notify2(msg):
     if msg.entities:
         for i, entity in enumerate(msg.entities):
             logger.info(f"Entity #{i+1}:")
@@ -129,7 +129,7 @@ def send_serverchan(msg: str):
 @bot.message_handler(content_types=['text'])
 @bot.message_handler(content_types=['text'])
 def detect_mention_and_notify(message):
-    detect_mention_and_notify(message)
+    detect_mention_and_notify2(message)
 
     if not message.entities:
         print("没有 @ ，直接忽略")
@@ -180,6 +180,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
