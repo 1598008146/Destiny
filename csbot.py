@@ -90,12 +90,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@bot.message_handler(content_types=['text'])
-def detect_mention_and_notify(message):
-    logger.info("收到消息: %s", message.text)
-    logger.info("来自用户: %s", message.from_user.username)
-    logger.info("entities: %s", message.entities)
-
 # -------------------------------
 # 固定配置
 # -------------------------------
@@ -105,6 +99,12 @@ TARGET_USERNAMES = ["AndreaDepierre2020","KB_Kyle","KB_TOM","JIETION"]
 
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 app = Flask(__name__)
+
+@bot.message_handler(content_types=['text'])
+def detect_mention_and_notify(message):
+    logger.info("收到消息: %s", message.text)
+    logger.info("来自用户: %s", message.from_user.username)
+    logger.info("entities: %s", message.entities)
 
 # -------------------------------
 # Server酱推送函数
@@ -175,6 +175,7 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=5000, debug=True)
+
 
 
 
